@@ -8,6 +8,7 @@ const produccRoute = require("./routes/productRoute");
 
 const app = express();
 app.use(express.json());
+app.use(express.static("public"));
 
 //for atlas connecdtion
 const mongodbUrl = process.env.MONGODB_ATLAS_SERVER.replace(
@@ -17,7 +18,7 @@ const mongodbUrl = process.env.MONGODB_ATLAS_SERVER.replace(
 
 //connecting to local database
 mongoose
-  .connect(mongodbUrl, {
+  .connect(process.env.MONGODB_COMPASS, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

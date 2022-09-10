@@ -29,7 +29,7 @@ const productSchema = mongoose.Schema(
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      ref: "category",
       required: true,
     },
     countInStock: {
@@ -37,6 +37,7 @@ const productSchema = mongoose.Schema(
       required: true,
       min: 0,
       max: 255,
+      default: 1,
     },
     rating: {
       type: Number,

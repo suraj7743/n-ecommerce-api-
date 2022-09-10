@@ -2,6 +2,20 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const productModel = require("../models/products");
 const categoryModel = require("../models/category");
+const multer = require("multer");
+
+//for saving data to the database
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/uploads/products");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + file.originalname);
+  },
+});
+
+const uploadOptions = multer({ storage: storage });
 
 //get all product items get request -- /prouduct
 const getAllProduct = catchAsync(async (req, res, next) => {
@@ -23,6 +37,7 @@ const getAllProduct = catchAsync(async (req, res, next) => {
 //post request on product item
 // post request --/product
 const postProduct = catchAsync(async (req, res, next) => {
+  const filename = req.file.filename;
   const categorydata = await categoryModel.findById(req.body.category);
   if (!categorydata) {
     return next(new AppError("Invalid Category ", 400));
@@ -40,12 +55,12 @@ const postProduct = catchAsync(async (req, res, next) => {
     countInStock,
     rating,
     isFeatured,
-  } = req.bdy;
+  } = req.body;
   const data = await productModel.create({
     name,
     description,
     richDescription,
-    image,
+    image: `${req.protocol}://${req.get("host")}/uploads/products/${filename}`,
     images,
     brand,
     price,
@@ -216,4 +231,5 @@ module.exports = {
   getProductAndCount,
   getFeaturedProduct,
   getFeaturedCount,
+  uploadOptions,
 };

@@ -6,8 +6,16 @@ const categoryControllers = require("../controllers/categoryController");
 
 //initializing route
 router.get("/", categoryControllers.getCategory);
-router.post("/", categoryControllers.postCategory);
-router.put("/:id", categoryControllers.updateCategory);
+router.post(
+  "/",
+  categoryControllers.uploadOptions.single("image"),
+  categoryControllers.postCategory
+);
+router.put(
+  "/:id",
+  categoryControllers.uploadOptions.single("image"),
+  categoryControllers.updateCategory
+);
 router.delete("/:id", categoryControllers.deleteCategory);
 router.get("/:id", categoryControllers.getCategoryById);
 
