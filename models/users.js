@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const userSchema = mongoose.Schema(
   {
     username: {
@@ -23,6 +24,12 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 12); //converting to hash password
+  }
+  next();
+});
 
 userSchema.virtual("id").get(function () {
   return this._id.toHexString();

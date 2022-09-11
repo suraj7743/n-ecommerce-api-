@@ -3,6 +3,7 @@ const AppError = require("../utils/appError");
 const productModel = require("../models/products");
 const categoryModel = require("../models/category");
 const multer = require("multer");
+const { default: mongoose } = require("mongoose");
 
 //for saving data to the database
 const storage = multer.diskStorage({
@@ -19,16 +20,41 @@ const uploadOptions = multer({ storage: storage });
 
 //get all product items get request -- /prouduct
 const getAllProduct = catchAsync(async (req, res, next) => {
-  let filter = {};
-  if (req.query.categories) {
-    filter = { category: req.query.categories.split(",") };
+  const queryObj = { ...req.query };
+
+  const excludeFields = ["page", "sort", "limit", "fields"];
+  excludeFields.forEach((el) => {
+    delete queryObj[el];
+  });
+  console.log(queryObj);
+  //sorting
+  let querydata = productModel.find(queryObj).populate("category");
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    querydata = querydata.sort(sortBy);
   }
-  const data = await productModel.find(filter).populate("category");
+  //paging limiting
+  if (req.query.limit) {
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+    querydata = querydata.skip(skip).limit(limit);
+  }
+
+  //selecting some element
+  if (req.query.fields) {
+    const field = req.query.fields.split(",").join(" ");
+    querydata = querydata.select(field);
+  }
+
+  const data = await querydata;
+
   if (!data) {
     return next(new AppError("Cannot find all product Error occured ", 400));
   }
   res.status(200).json({
     status: "success",
+    result: data.length,
     message: "all Product data ",
     data,
   });
@@ -81,11 +107,26 @@ const postProduct = catchAsync(async (req, res, next) => {
 
 //update producct by id  put request /product/:id
 const updateProduct = catchAsync(async (req, res, next) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return next(new AppError("Invalid product id ", 400));
+  }
   const categoryData = await categoryModel.findById(req.body.category);
   if (!categoryData) {
     return next(
       new AppError("Cannot find the category id cannot update ", 400)
     );
+  }
+  const productData = await productModel.findById(req.params.id);
+  if (!productData) {
+    return next(new AppError("Invalid product", 400));
+  }
+  let imageFileName;
+  if (req.file) {
+    imageFileName = `${req.protocol}://${req.get("host")}/uploads/products/${
+      req.file.filename
+    }`;
+  } else {
+    imageFileName = productData.image;
   }
 
   const {
@@ -100,14 +141,14 @@ const updateProduct = catchAsync(async (req, res, next) => {
     countInStock,
     rating,
     isFeatured,
-  } = req.bdy;
+  } = req.body;
   const data = await productModel.findByIdAndUpdate(
     req.params.id,
     {
       name,
       description,
       richDescription,
-      image,
+      image: imageFileName,
       images,
       brand,
       price,
@@ -201,6 +242,7 @@ const getFeaturedProduct = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({
     status: "success",
+    result: data.length,
     message: "featured product ",
     data,
   });
