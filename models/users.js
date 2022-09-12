@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const userSchema = mongoose.Schema(
   {
     username: {
@@ -19,17 +20,26 @@ const userSchema = mongoose.Schema(
     is_admin: {
       default: false,
     },
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpiresIn: Date,
   },
   {
     timestamps: true,
   }
 );
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 12); //converting to hash password
-  }
+  if (!this.isModified("password")) next();
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
+userSchema.methods.generateToken = function () {
+  const resetToken = crypto.randomBytes(3).toString("hex");
+  this.resetToken = resetToken;
+  this.resetTokenExpiresIn = Date.now() * 60 * 1000;
+  return resetToken;
+};
 
 userSchema.virtual("id").get(function () {
   return this._id.toHexString();

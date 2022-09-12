@@ -5,6 +5,7 @@ const usermodel = require("../models/users");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
+const sendEmail = require("../utils/nodemail");
 
 const jwttoken = (id) => {
   const token = jwt.sign(
@@ -13,7 +14,7 @@ const jwttoken = (id) => {
     },
     process.env.jwtsecret,
     {
-      expiresIn: "3d",
+      expiresIn: process.env.JWT_EXPIRES_IN,
     }
   );
   return token;
@@ -35,10 +36,10 @@ const registerUser = catchAsync(async (req, res, next) => {
     email,
     password,
   });
-  const data = await saveData.save();
+
   res.status(200).json({
     status: "success",
-    data,
+    data: saveData,
   });
 });
 
@@ -49,15 +50,15 @@ const loginUser = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User Not found with given email ", 400));
   }
-  if (!user && !bcrypt.compare(req.body.password, user.password)) {
-    return next(new AppError("Invalid email and password ", 401));
+  if (user && (await bcrypt.compare(req.body.password, user.password))) {
+    const token = jwttoken(user._id);
+    return res.status(200).json({
+      status: "success",
+      message: "user authorized",
+      token,
+    });
   }
-  const token = jwttoken(user._id);
-  res.status(200).json({
-    status: "success",
-    message: "user authorized",
-    token,
-  });
+  return next(new AppError("Invalid email and password ", 401));
 });
 const protectMiddleware = catchAsync(async (req, res, next) => {
   //1) checks if token exist or not
@@ -75,17 +76,46 @@ const protectMiddleware = catchAsync(async (req, res, next) => {
   }
   //2) verify token
   const decoded = await promisify(jwt.verify)(token, process.env.jwtsecret);
-  console.log(decoded);
-  if ((decoded = "")) {
+  //3)
+  //check whether user exists or not after jwt issued
+  const freshUser = await usermodel.findById(decoded.id);
+  if (!freshUser) {
+    return next(new AppError("User not exist with the given token ", 401));
+  }
+
+  const validDate = Date.parse(freshUser.updatedAt) / 1000;
+
+  //4)
+  //check whether the password change or not after jwt is issued
+  if (validDate > decoded.iat) {
     return next(
-      new AppError("Invalid token .please login with valid credentials", 401)
+      new AppError("You just changed your password .Need to login again ", 401)
     );
   }
+  req.user = freshUser;
   next();
 });
+const forgetpassword = catchAsync(async (req, res, next) => {
+  const user = await usermodel.findOne({ email: req.body.email });
+  if (!user) {
+    return next(
+      new AppError("provide valid email to forget the password ", 404)
+    );
+  }
+  const resetToken = user.generateToken();
+  await user.save({ validateBeforeSave: false });
+  res.status(200).json({
+    status: "success",
+    tokenforReset: resetToken,
+  });
+});
+//reseting password
+const resetPassword = catchAsync(async (req, res, next) => {});
 
 module.exports = {
   registerUser,
   loginUser,
   protectMiddleware,
+  forgetpassword,
+  resetPassword,
 };

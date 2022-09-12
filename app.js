@@ -6,7 +6,7 @@ const authRoute = require("./routes/authRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const produccRoute = require("./routes/productRoute");
 const userRoute = require("./routes/UserRoute");
-
+const errorController = require("./controllers/ErrorController");
 const morgan = require("morgan");
 
 const app = express();
@@ -47,14 +47,6 @@ app.all("*", (req, res, next) => {
 });
 
 //error handled middleware
-app.use((err, req, res, next) => {
-  err.statuscode = err.statuscode || 500;
-  err.status = err.status || "error";
-  res.status(err.statuscode).json({
-    status: err.status,
-    message: err.message,
-    stack: err.stack,
-  });
-});
+app.use(errorController);
 
 module.exports = app;

@@ -5,6 +5,8 @@ const router = express();
 const authController = require("../controllers/authController");
 router.post("/register", authController.registerUser);
 router.post("/login", authController.loginUser);
+router.post("/forgetPassword", authController.forgetpassword);
+router.post("/resetPassword/:token", authController.resetPassword);
 
 //exporting router
 module.exports = router;
