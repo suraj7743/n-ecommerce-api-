@@ -26,7 +26,7 @@ const getAllProduct = catchAsync(async (req, res, next) => {
   excludeFields.forEach((el) => {
     delete queryObj[el];
   });
-  console.log(queryObj);
+
   //sorting
   let querydata = productModel.find(queryObj).populate("category");
   if (req.query.sort) {

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express();
+const authController = require("../controllers/authController");
 
 //importing category model
 const categoryControllers = require("../controllers/categoryController");

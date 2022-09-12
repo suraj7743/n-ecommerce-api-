@@ -4,7 +4,20 @@ const AppError = require("../utils/appError");
 const usermodel = require("../models/users");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { promisify } = require("util");
 
+const jwttoken = (id) => {
+  const token = jwt.sign(
+    {
+      id,
+    },
+    process.env.jwtsecret,
+    {
+      expiresIn: "3d",
+    }
+  );
+  return token;
+};
 /*
 /register -post 
 take data from body 
@@ -36,27 +49,43 @@ const loginUser = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User Not found with given email ", 400));
   }
-  if (user && bcrypt.compare(req.body.password, user.password)) {
-    const token = jwt.sign(
-      {
-        userId: user.id,
-      },
-      process.env.jwtsecret,
-      {
-        expiresIn: "3d",
-      }
-    );
-    res.status(200).json({
-      status: "success",
-      message: "user authenticated ",
-      email: user.email,
-      token,
-    });
-  } else {
-    return next(new AppError("Password doesnot match ", 400));
+  if (!user && !bcrypt.compare(req.body.password, user.password)) {
+    return next(new AppError("Invalid email and password ", 401));
   }
+  const token = jwttoken(user._id);
+  res.status(200).json({
+    status: "success",
+    message: "user authorized",
+    token,
+  });
 });
+const protectMiddleware = catchAsync(async (req, res, next) => {
+  //1) checks if token exist or not
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+  if (!token) {
+    return next(
+      new AppError("You are not authorized .Please login to proceed", 401)
+    );
+  }
+  //2) verify token
+  const decoded = await promisify(jwt.verify)(token, process.env.jwtsecret);
+  console.log(decoded);
+  if ((decoded = "")) {
+    return next(
+      new AppError("Invalid token .please login with valid credentials", 401)
+    );
+  }
+  next();
+});
+
 module.exports = {
   registerUser,
   loginUser,
+  protectMiddleware,
 };

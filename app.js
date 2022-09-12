@@ -6,7 +6,7 @@ const authRoute = require("./routes/authRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const produccRoute = require("./routes/productRoute");
 const userRoute = require("./routes/UserRoute");
-const authJwt = require("./utils/jwt");
+
 const morgan = require("morgan");
 
 const app = express();
@@ -31,10 +31,11 @@ mongoose
   .catch((error) => {
     console.log(error);
   });
+console.log(process.env.NODE_ENV);
 app.use(morgan("dev"));
 //route specified
 app.use("/user", authRoute);
-app.use(authJwt()); //middleware to pass the token if token matched it succed otherwise show error
+//middleware to pass the token if token matched it succed otherwise show error
 
 app.use("/category", categoryRoute);
 app.use("/product", produccRoute);
@@ -52,6 +53,7 @@ app.use((err, req, res, next) => {
   res.status(err.statuscode).json({
     status: err.status,
     message: err.message,
+    stack: err.stack,
   });
 });
 
