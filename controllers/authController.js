@@ -104,9 +104,12 @@ const forgetpassword = catchAsync(async (req, res, next) => {
   }
   const resetToken = user.generateToken();
   await user.save({ validateBeforeSave: false });
+  const resetUrl = `${req.protocol}://${req.get("host")}/user/resetPassword/`;
+  const message = `Forget your password ? Submit a PATCH request with your new password and passwordConfirm to :${resetUrl}.\n If you didn't forget your password ,please ignore this email`;
   res.status(200).json({
     status: "success",
     tokenforReset: resetToken,
+    message: "token sent to mail ",
   });
 });
 //reseting password

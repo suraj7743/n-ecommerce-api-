@@ -37,7 +37,7 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.generateToken = function () {
   const resetToken = crypto.randomBytes(3).toString("hex");
   this.resetToken = resetToken;
-  this.resetTokenExpiresIn = Date.now() * 60 * 1000;
+  this.resetTokenExpiresIn = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
 
