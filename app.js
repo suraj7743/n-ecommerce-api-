@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const { default: mongoose, mongo } = require("mongoose");
 const AppError = require("./utils/appError");
 const dotenv = require("dotenv").config({ path: "./.env" });
@@ -10,6 +11,7 @@ const errorController = require("./controllers/ErrorController");
 const morgan = require("morgan");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 

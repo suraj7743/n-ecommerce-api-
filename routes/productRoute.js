@@ -5,7 +5,7 @@ const authController = require("../controllers/authController");
 
 router.get(
   "/",
-  authController.protectMiddleware,
+  // authController.protectMiddleware,
   productController.getAllProduct
 );
 router.post(

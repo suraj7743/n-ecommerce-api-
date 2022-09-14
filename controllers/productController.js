@@ -52,12 +52,13 @@ const getAllProduct = catchAsync(async (req, res, next) => {
   if (!data) {
     return next(new AppError("Cannot find all product Error occured ", 400));
   }
-  res.status(200).json({
-    status: "success",
-    result: data.length,
-    message: "all Product data ",
-    data,
-  });
+  // res.status(200).json({
+  //   status: "success",
+  //   result: data.length,
+  //   message: "all Product data ",
+  //   data,
+  // });
+  res.status(200).json(data);
 });
 
 //post request on product item

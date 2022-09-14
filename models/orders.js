@@ -1,41 +1,49 @@
 const mongoose = require("mongoose");
-const orderSchema = mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, "must include a product title  "],
-    unique: [true, "Title must be unique "],
+const orderSchema = mongoose.Schema(
+  {
+    orderItems: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, "must include objectItem id to order item "],
+    },
+    shippingAddress1: {
+      type: String,
+      required: [true, "Must include this address"],
+    },
+    shippingAddress2: {
+      type: String,
+    },
+    city: {
+      type: String,
+      required: [true, "Include city name for delivery"],
+    },
+    zip: {
+      type: String,
+      required: [true, "must include zip code "],
+    },
+    country: {
+      type: String,
+      required: [true, "Include your country name "],
+    },
+    phone: {
+      type: String,
+      required: [true, "Must include a phone number for delivery"],
+    },
+    status: {
+      type: String,
+    },
+    totalPrice: {
+      type: Number,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    dateOrdered: Date,
   },
-  description: {
-    type: String,
-    required: [true, "Must include a description "],
-  },
-  img: {
-    type: String,
-    required: [true, "must include a product image  "],
-  },
-  categories: {
-    type: Array,
-  },
-  size: {
-    type: String,
-  },
-  color: {
-    type: String,
-  },
-  price: {
-    type: Number,
-    required: [true, "must include a product price   "],
-  },
-  amount: Number,
-  address: {
-    type: Object,
-    required: [true, "Must include a address "],
-  },
-  status: {
-    type: String,
-    default: "pending",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 orderSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
