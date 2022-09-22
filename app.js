@@ -9,9 +9,12 @@ const produccRoute = require("./routes/productRoute");
 const userRoute = require("./routes/UserRoute");
 const errorController = require("./controllers/ErrorController");
 const morgan = require("morgan");
+const bodyParser = require("body-parser");
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static("public"));
 

@@ -1,10 +1,12 @@
 const mongoose = require("mongoose");
 const orderSchema = mongoose.Schema(
   {
-    orderItems: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: [true, "must include objectItem id to order item "],
-    },
+    orderItems: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        required: [true, "must include objectItem id to order item "],
+      },
+    ],
     shippingAddress1: {
       type: String,
       required: [true, "Must include this address"],
@@ -30,6 +32,7 @@ const orderSchema = mongoose.Schema(
     },
     status: {
       type: String,
+      default: "pending",
     },
     totalPrice: {
       type: Number,
@@ -38,7 +41,7 @@ const orderSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
-    dateOrdered: Date,
+    dateOrdered: Date.now(),
   },
   {
     timestamps: true,

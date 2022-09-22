@@ -16,7 +16,7 @@ router.post(
 );
 router.put(
   "/:id",
-  authController.protectMiddleware,
+  // authController.protectMiddleware,
   productController.uploadOptions.single("image"),
   productController.updateProduct
 );

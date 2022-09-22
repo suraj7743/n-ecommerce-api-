@@ -4,10 +4,19 @@ const usermodel = require("../models/users");
 const bcrypt = require("bcrypt");
 //get all user get request /user/
 const getAlluser = catchAsync(async (req, res, next) => {
+  if (req.user.is_admin != true) {
+    return next(
+      new AppError(
+        "Sorry you are not given permission to visit this page ",
+        400
+      )
+    );
+  }
   const user = await usermodel.find().select("-password");
   if (!user) {
     return next(new AppError("Cannot find user ", 400));
   }
+
   res.status(200).json({
     status: "success",
     result: user.length,
@@ -18,6 +27,14 @@ const getAlluser = catchAsync(async (req, res, next) => {
 //get single user with id:
 //get request /users/:id
 const getSingleUser = catchAsync(async (req, res, next) => {
+  if (req.user.is_admin != true) {
+    return next(
+      new AppError(
+        "Sorry you are not given permission to visit this page ",
+        400
+      )
+    );
+  }
   const user = await usermodel.findById(req.params.id).select("-password");
   if (!user) {
     return next(new AppError("Invalid user id ", 400));
@@ -30,6 +47,14 @@ const getSingleUser = catchAsync(async (req, res, next) => {
 
 //update user
 const updateUser = catchAsync(async (req, res, next) => {
+  if (req.user.is_admin != true) {
+    return next(
+      new AppError(
+        "Sorry you are not given permission to visit this page ",
+        400
+      )
+    );
+  }
   const user = await usermodel.findById(req.params.id);
   if (!user) {
     return next(

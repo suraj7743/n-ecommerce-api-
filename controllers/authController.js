@@ -31,15 +31,18 @@ const registerUser = catchAsync(async (req, res, next) => {
   if (!username || !email || !password) {
     return next(new AppError("Input  all field", 400));
   }
-  const saveData = await usermodel.create({
+  const saveData = new usermodel({
     username,
     email,
     password,
   });
+  const data = await saveData.save();
+  const token = jwttoken(saveData._id);
 
   res.status(200).json({
     status: "success",
-    data: saveData,
+    data,
+    token,
   });
 });
 
@@ -60,6 +63,8 @@ const loginUser = catchAsync(async (req, res, next) => {
   }
   return next(new AppError("Invalid email and password ", 401));
 });
+
+//to protect other endpoint
 const protectMiddleware = catchAsync(async (req, res, next) => {
   //1) checks if token exist or not
   let token;
@@ -83,18 +88,27 @@ const protectMiddleware = catchAsync(async (req, res, next) => {
     return next(new AppError("User not exist with the given token ", 401));
   }
 
-  const validDate = Date.parse(freshUser.updatedAt) / 1000;
+  const validDate = Date.parse(freshUser.passwordUpdataDate) / 1000;
 
   //4)
   //check whether the password change or not after jwt is issued
-  if (validDate > decoded.iat) {
+  if (decoded.iat < validDate) {
     return next(
       new AppError("You just changed your password .Need to login again ", 401)
     );
   }
   req.user = freshUser;
+  req.cookie =
+    ("jwt",
+    freshUser,
+    {
+      expires: new Date(Date.now() + 30 * 24 * 3600000),
+    });
   next();
 });
+
+//it require the mail to send to the user
+
 const forgetpassword = catchAsync(async (req, res, next) => {
   const user = await usermodel.findOne({ email: req.body.email });
   if (!user) {
@@ -104,16 +118,55 @@ const forgetpassword = catchAsync(async (req, res, next) => {
   }
   const resetToken = user.generateToken();
   await user.save({ validateBeforeSave: false });
-  const resetUrl = `${req.protocol}://${req.get("host")}/user/resetPassword/`;
-  const message = `Forget your password ? Submit a PATCH request with your new password and passwordConfirm to :${resetUrl}.\n If you didn't forget your password ,please ignore this email`;
-  res.status(200).json({
-    status: "success",
-    tokenforReset: resetToken,
-    message: "token sent to mail ",
-  });
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/user/resetPassword/:${resetToken}`;
+  const message = `Forget your password ? Submit a PATCH request with your new password and passwordConfirm to :${resetUrl}.\n If you didn't forget your password ,please ignore this email (valid for only 10 min )`;
+
+  const option = {
+    email: user.email,
+    subject: `Resetting you password `,
+    message,
+  };
+  try {
+    await sendEmail(option);
+
+    res.status(200).json({
+      status: "success",
+      tokenforReset: resetToken,
+      message: "token sent to mail ",
+    });
+  } catch (error) {
+    user.resetToken = undefined;
+    user.resetTokenExpiresIn = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new AppError("Error sending mail ", 500));
+  }
 });
 //reseting password
-const resetPassword = catchAsync(async (req, res, next) => {});
+const resetPassword = catchAsync(async (req, res, next) => {
+  const user = usermodel.findOne({
+    resetToken: req.params.token,
+    resetTokenExpiresIn: { $gt: Date.now() },
+  });
+  if (!user) {
+    return next(
+      new AppError(
+        "Cannot find the valid token or token expired try again ",
+        401
+      )
+    );
+  }
+  user.password = req.body.password;
+  (user.resetToken = undefined), (user.resetTokenExpiresIn = undefined);
+  const data = await user.save();
+  const token = jwttoken(data._id);
+  res.status(200).json({
+    status: "success",
+    message: "password reset and new token generate",
+    jwttoken: token,
+  });
+});
 
 module.exports = {
   registerUser,

@@ -18,8 +18,10 @@ const userSchema = mongoose.Schema(
       required: [true, "must include a passowrd "],
     },
     is_admin: {
+      type: Boolean,
       default: false,
     },
+    passwordUpdataDate: Date,
     resetToken: {
       type: String,
     },
@@ -29,13 +31,32 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+userSchema.pre("save", function (next) {
+  const user = this;
+
+  if (this.isModified("password") || this.isNew) {
+    bcrypt.genSalt(10, function (saltError, salt) {
+      if (saltError) {
+        return next(saltError);
+      } else {
+        bcrypt.hash(user.password, salt, function (hashError, hash) {
+          if (hashError) {
+            return next(hashError);
+          }
+
+          user.password = hash;
+          next();
+        });
+      }
+    });
+    this.passwordUpdataDate = Date.now() - 1000;
+  } else {
+    return next();
+  }
 });
+
 userSchema.methods.generateToken = function () {
-  const resetToken = crypto.randomBytes(3).toString("hex");
+  const resetToken = crypto.randomBytes(32).toString("hex");
   this.resetToken = resetToken;
   this.resetTokenExpiresIn = Date.now() + 10 * 60 * 1000;
   return resetToken;
