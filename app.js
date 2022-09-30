@@ -10,8 +10,51 @@ const userRoute = require("./routes/UserRoute");
 const errorController = require("./controllers/ErrorController");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
-
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
 const app = express();
+const swaggerDefinition = {
+  openapi: "3.0.0",
+  info: {
+    title: "Express API N-ecommerce",
+    version: "1.0.0",
+    description:
+      "This is a REST API application made with Express. It retrieves data from JSONPlaceholder for N_Ecommerce.",
+    license: {
+      name: "Licensed Under MIT",
+      url: "https://spdx.org/licenses/MIT.html",
+    },
+    contact: {
+      name: "solo developer",
+      url: "https://jsonplaceholder.typicode.com",
+    },
+  },
+  servers: [
+    {
+      url: "http://localhost:8000",
+      description: "Development server",
+    },
+  ],
+};
+const options = {
+  swaggerDefinition,
+  // Paths to files containing OpenAPI definitions
+  apis: ["./routes/*.js"],
+};
+
+const swaggerDocs = swaggerJsDoc(options);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+/**
+ * @swagger
+ * /category:
+ *  get:
+ *   description:Get all the category
+ *   responses:
+ *    200:
+ *     description:success
+ *
+ */
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

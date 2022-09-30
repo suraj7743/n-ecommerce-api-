@@ -1,6 +1,9 @@
 const AppError = require("../utils/appError");
 
 const sendErrorDev = (err, res) => {
+  console.log(err);
+  console.log(err.name);
+  console.log(err.message);
   res.status(err.statuscode).json({
     status: err.status,
     error: err,
@@ -18,6 +21,7 @@ const sendErrorProd = (err, res) => {
   } else {
     console.error("Error 💣", err);
     console.log(err.name);
+    console.log(err.code);
     res.status(500).json({
       status: "error",
       message: "something went wrong ",
@@ -43,6 +47,13 @@ module.exports = (err, req, res, next) => {
         message: "Token expired .You need to login again ",
       });
     }
+    if (err.code === 11000) {
+      return res.status(400).json({
+        status: "Error",
+        message: "user already exist try with another username and email ",
+      });
+    }
+
     sendErrorProd(err, res);
   }
 };
