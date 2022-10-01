@@ -35,6 +35,15 @@ const swaggerDefinition = {
       description: "Development server",
     },
   ],
+  components: {
+    securitySchemes: {
+      Bearer: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
+  },
 };
 const options = {
   swaggerDefinition,
@@ -44,6 +53,13 @@ const options = {
 
 const swaggerDocs = swaggerJsDoc(options);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+function ignoreFavicon(req, res, next) {
+  if (req.originalUrl.includes("favicon.ico")) {
+    res.status(204).end();
+  }
+  next();
+}
+app.use(ignoreFavicon);
 /**
  * @swagger
  * /category:

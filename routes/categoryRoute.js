@@ -30,6 +30,8 @@ const categoryControllers = require("../controllers/categoryController");
  * @swagger
  * /category:
  *  get:
+ *   security:
+ *    - Bearer: []
  *   tags:
  *    - Category
  *   summary: "For Getting all list of category "
@@ -48,12 +50,18 @@ const categoryControllers = require("../controllers/categoryController");
  */
 
 //initializing route
-router.get("/", categoryControllers.getCategory);
+router.get(
+  "/",
+  authController.protectMiddleware,
+  categoryControllers.getCategory
+);
 
 /**
  * @swagger
  * /category:
  *  post:
+ *   security:
+ *     - Bearer: []
  *   tags:
  *    - Category
  *   summary: "Forposting new Category  "
@@ -87,6 +95,7 @@ router.get("/", categoryControllers.getCategory);
  */
 router.post(
   "/",
+  authController.protectMiddleware,
   categoryControllers.uploadOptions.single("image"),
   categoryControllers.postCategory
 );
@@ -95,6 +104,8 @@ router.post(
  * @swagger
  * /category/{id}:
  *  put:
+ *   security:
+ *    - Bearer: []
  *   tags:
  *    - Category
  *   summary: "To update the category   "
@@ -144,6 +155,8 @@ router.put(
  * @swagger
  * /category/{id}:
  *  delete:
+ *   security:
+ *    - Bearer: []
  *   tags:
  *    - Category
  *   summary: "For Deleting the Selected Category  "
@@ -168,12 +181,18 @@ router.put(
  *
  *
  */
-router.delete("/:id", categoryControllers.deleteCategory);
+router.delete(
+  "/:id",
+  authController.protectMiddleware,
+  categoryControllers.deleteCategory
+);
 
 /**
  * @swagger
  * /category/{id}:
  *  get:
+ *   security:
+ *    - Bearer: []
  *   tags:
  *    - Category
  *   summary: "For Getting all list of category "
@@ -198,6 +217,10 @@ router.delete("/:id", categoryControllers.deleteCategory);
  *
  *
  */
-router.get("/:id", categoryControllers.getCategoryById);
+router.get(
+  "/:id",
+  authController.protectMiddleware,
+  categoryControllers.getCategoryById
+);
 
 module.exports = router;
