@@ -1,10 +1,9 @@
 const AppError = require("../utils/appError");
-
 const sendErrorDev = (err, res) => {
   console.log(err);
   console.log(err.name);
   console.log(err.message);
-  res.status(err.statuscode).json({
+  return res.status(err.statuscode).json({
     status: err.status,
     error: err,
     message: err.message,
@@ -14,7 +13,7 @@ const sendErrorDev = (err, res) => {
 };
 const sendErrorProd = (err, res) => {
   if (err.isOperational) {
-    res.status(400).json({
+    return res.status(400).json({
       status: "error",
       message: err.message,
     });
@@ -22,7 +21,7 @@ const sendErrorProd = (err, res) => {
     console.error("Error 💣", err);
     console.log(err.name);
     console.log(err.code);
-    res.status(500).json({
+    return res.status(500).json({
       status: "error",
       message: "something went wrong ",
     });

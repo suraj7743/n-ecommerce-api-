@@ -64,7 +64,7 @@ router.get(
  *     - Bearer: []
  *   tags:
  *    - Category
- *   summary: "Forposting new Category  "
+ *   summary: "For posting new Category  "
  *   description: Post the new Category required name and image
  *   requestBody:
  *    content:
@@ -141,7 +141,7 @@ router.post(
  *       schema:
  *        $ref: "#/components/schemas/category"
  *     400:
- *      description: "Error updating user  "
+ *      description: "Error updating category  "
  *
  *
  */
@@ -195,8 +195,8 @@ router.delete(
  *    - Bearer: []
  *   tags:
  *    - Category
- *   summary: "For Getting all list of category "
- *   description: Get all the category  listed
+ *   summary: "For Getting selected  category "
+ *   description: Get  the specific category
  *   parameters:
  *    - name: id
  *      in: path

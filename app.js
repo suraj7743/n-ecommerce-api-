@@ -7,12 +7,17 @@ const authRoute = require("./routes/authRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const produccRoute = require("./routes/productRoute");
 const userRoute = require("./routes/UserRoute");
+const cartRoute = require("./routes/cartRoute");
 const errorController = require("./controllers/ErrorController");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 const app = express();
+process.on("uncaughtException", (err) => {
+  console.log(err);
+  process.exit(1);
+});
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
@@ -104,6 +109,7 @@ app.use("/user", authRoute);
 app.use("/category", categoryRoute);
 app.use("/product", produccRoute);
 app.use("/users", userRoute);
+app.use("/cart", cartRoute);
 
 //unhandled routes goes to this middleware
 app.all("*", (req, res, next) => {

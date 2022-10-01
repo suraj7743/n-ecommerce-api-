@@ -86,14 +86,120 @@ router.get("/", authController.protectMiddleware, cartController.getAllCart);
  *
  */
 router.post("/", authController.protectMiddleware, cartController.postCart);
+
+/**
+ * @swagger
+ * /cart/{id}:
+ *  put:
+ *   security:
+ *    - Bearer: []
+ *   tags:
+ *    - Cart
+ *   summary: "To update the cart list   "
+ *   description: user can update the cart quantity need to provide the cart item id
+ *   parameters:
+ *   - name: id
+ *     in: path
+ *     description: Enter the specific cart id in parameter to update the quantity
+ *     required: true
+ *     schema:
+ *      type: string
+ *      example: 2345ei_2432jkd_34
+ *   requestBody:
+ *    content:
+ *     multipart/form-data:
+ *        schema:
+ *         type: object
+ *         properties:
+ *           quantity:
+ *            type: number
+ *            required: true
+ *
+ *         example:
+ *          quantity: 3
+ *   responses:
+ *    202:
+ *     description: "cart updated "
+ *     content:
+ *      multipart/form-data:
+ *       schema:
+ *        $ref: "#/components/schemas/cart"
+ *     400:
+ *      description: "Error updating cart  "
+ *
+ *
+ */
 router.put("/:id", authController.protectMiddleware, cartController.updateCart);
+
+/**
+ * @swagger
+ * /cart/{id}:
+ *  delete:
+ *   security:
+ *    - Bearer: []
+ *   tags:
+ *    - Cart
+ *   summary: "For Deleting the Selected cart  "
+ *   description: Deleting Selected cart
+ *   parameters:
+ *    - name: id
+ *      in: path
+ *      description: Entet the cart id in parameter to delete the selected cart
+ *      required: true
+ *      schema:
+ *       type: string
+ *       example : "2343_2345r34wef23_34"
+ *   responses:
+ *    200:
+ *     description: "cart of selected id Deleted  "
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: "#/components/schemas/cart"
+ *    400:
+ *     description: "Error occured"
+ *
+ *
+ */
 router.delete(
   "/:id",
   authController.protectMiddleware,
   cartController.deleteCart
 );
+
+/**
+ * @swagger
+ * /cart/{id}:
+ *  get:
+ *   security:
+ *    - Bearer: []
+ *   tags:
+ *    - Cart
+ *   summary: "For Getting selected  cart "
+ *   description: Get  the specific cart
+ *   parameters:
+ *    - name: id
+ *      in: path
+ *      description: Entet the cart id in parameter to get only cart of selected id
+ *      required: true
+ *      schema:
+ *       type: string
+ *       example : "2343_2345r34wef23_34"
+ *   responses:
+ *    200:
+ *     description: "List of selected cart  "
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: "#/components/schemas/cart"
+ *    400:
+ *     description: "Error Occured"
+ *
+ *
+ */
 router.get(
   "/:id",
   authController.protectMiddleware,
   cartController.getCartWithId
 );
+module.exports = router;
