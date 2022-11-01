@@ -19,11 +19,11 @@ const getAllCart = catchAsync(async (req, res, next) => {
 
 const postCart = catchAsync(async (req, res, next) => {
   const { product, quantity } = req.body;
+
   if (!product) {
     return next(new AppError("Need the product to add to the cart ", 400));
   }
-  const cartData = cartModel.create({
-    user: req.user._id,
+  const cartData = new cartModel({
     product,
     quantity,
   });
