@@ -83,6 +83,15 @@ const getCartWithId = catchAsync(async (req, res, next) => {
     user,
   });
 });
+const deleteallChart = catchAsync(async (req, res, next) => {
+  const data = await cartModel.deleteMany();
+  if (data) {
+    return res.status(200).json({
+      message: "All cart data deleted",
+    });
+  }
+  next(new AppError("Cannot delete all item from cart", 400));
+});
 
 module.exports = {
   getAllCart,
@@ -90,4 +99,5 @@ module.exports = {
   updateCart,
   deleteCart,
   getCartWithId,
+  deleteallChart,
 };
